@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件上传</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../../plugins/element-ui/index.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/page.css" />
+</head>
+<body>
+<div class="addBrand-container" id="food-add-app">
+    <div class="container">
+        <el-upload
+                class="avatar-uploader"
+                :http-request="customUpload"
+                :show-file-list="false"
+                :on-success="handleAvatarSuccess"
+                :on-error="handleUploadError"
+                :before-upload="beforeUpload"
+                ref="upload">
+            <img v-if="imageUrl" :src="imageUrl" class="avatar"/>
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+        </el-upload>
+    </div>
+</div>
+<!-- 引入依赖 -->
+<script src="../../plugins/vue/vue.js"></script>
+<script src="../../plugins/element-ui/index.js"></script>
+<script src="../../plugins/axios/axios.min.js"></script>
+<script src="../../js/index.js"></script>
+<script src="../../js/request.js"></script>
+<script>
+    // 页面加载时检查登录状态，记录当前地址作为跳转目标
+    // (function() {
+    //     const token = localStorage.getItem('token');
+    //     if (!token) {
+    //         // 保存当前页面地址到本地存储
+    //         localStorage.setItem('redirectUrl', window.location.href);
+    //     }
+    // })();
+
+    new Vue({
+        el: '#food-add-app',
+        data() {
+            return {
+                imageUrl: ''
+            }
+        },
+        methods: {
+            customUpload(params) {
+                const formData = new FormData();
+                formData.append('file', params.file);
+
+                $axios({
+                    url: '/common/upload',
+                    method: 'post',
+                    data: formData,
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }).then(response => {
+                    params.onSuccess(response.data);
+                }).catch(error => {
+                    params.onError(error);
+                });
+            },
+            handleAvatarSuccess(response, file, fileList) {
+                this.imageUrl = `/common/download?name=${response}`;
+                this.$message.success('文件上传成功！');
+            },
+            handleUploadError() {
+                this.$message.error('文件上传失败，请重试');
+            },
+            beforeUpload(file) {
+                if(file) {
+                    const suffix = file.name.split('.').pop().toLowerCase();
+                    const isImage = ['png', 'jpeg', 'jpg'].includes(suffix);
+                    const isLt2M = file.size / 1024 / 1024 < 2;
+
+                    if (!isImage) {
+                        this.$message.error('上传图片只支持 png、jpeg、jpg 格式！');
+                        this.$refs.upload.clearFiles();
+                        return false;
+                    }
+                    if (!isLt2M) {
+                        this.$message.error('上传文件大小不能超过 2MB!');
+                        return false;
+                    }
+                    return true;
+                }
+            }
+        }
+    })
+</script>
+</body>
+</html>

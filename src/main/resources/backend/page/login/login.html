@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>瑞吉外卖 - 管理后台登录</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* 隐藏Edge浏览器密码框自带的显示按钮 */
+    input[type="password"]::-ms-reveal {
+      display: none;
+    }
+
+    /* 隐藏Edge浏览器密码框自带的清除按钮 */
+    input[type="password"]::-ms-clear {
+      display: none;
+    }
+
+    /* 原始样式保持不变 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans SC', sans-serif;
+      background: linear-gradient(135deg, #ff9d6c 0%, #ff6b6b 100%);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/></svg>');
+      background-size: 50px;
+      opacity: 0.3;
+    }
+
+    .login-container {
+      display: flex;
+      width: 100%;
+      max-width: 1000px;
+      height: 600px;
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+      animation: fadeIn 0.8s ease-out;
+      position: relative;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .banner-section {
+      flex: 1;
+      background: linear-gradient(135deg, #ff9d6c 0%, #ff6b6b 100%);
+      color: white;
+      padding: 60px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .banner-section::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="20" cy="20" r="3" fill="rgba(255,255,255,0.2)"/><circle cx="50" cy="70" r="4" fill="rgba(255,255,255,0.2)"/><circle cx="80" cy="30" r="2" fill="rgba(255,255,255,0.2)"/><circle cx="40" cy="50" r="3" fill="rgba(255,255,255,0.2)"/></svg>');
+      background-size: 100px;
+    }
+
+    .banner-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+
+    .banner-content h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .banner-content p {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      max-width: 400px;
+      margin: 0 auto 30px;
+      opacity: 0.9;
+    }
+
+    .food-icons {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 40px;
+    }
+
+    .food-icon {
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .food-icon:nth-child(1) { animation-delay: 0s; }
+    .food-icon:nth-child(2) { animation-delay: 0.5s; }
+    .food-icon:nth-child(3) { animation-delay: 1s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .login-section {
+      flex: 1;
+      padding: 60px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: #fff;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .login-header img {
+      width: 180px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    .login-header h2 {
+      font-size: 1.8rem;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .login-form {
+      width: 100%;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .input-with-icon {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 18px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 15px 20px 15px 50px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s;
+      background: #f9f9f9;
+    }
+
+    .form-control:focus {
+      border-color: #ff6b6b;
+      box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+      outline: none;
+      background: #fff;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 10; /* 确保自定义按钮位于最上层 */
+    }
+
+    .password-toggle:hover {
+      color: #ff6b6b;
+    }
+
+    .remember-me {
+      display: flex;
+      align-items: center;
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+
+    .remember-me input {
+      margin-right: 8px;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(to right, #ff9d6c, #ff6b6b);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+    /*登录中状态*/
+    .login-btn.loading{
+      cursor:not-allowed;
+      padding-left: 40px;
+    }
+
+    @keyframes loading {
+      100% {
+        left: 100%;
+      }
+    }
+
+    /* 登录成功状态 */
+    .login-btn.success {
+      background: linear-gradient(to right, #4CAF50, #2E7D32);
+      cursor: default;
+    }
+
+    .login-btn.success:after {
+      content: "\f00c";
+      font-family: "Font Awesome 5 Free",serif;
+      font-weight: 900;
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      transform: translateY(-50%);
+      font-size: 18px;
+    }
+
+    .footer-text {
+      text-align: center;
+      margin-top: 30px;
+      color: #888;
+      font-size: 14px;
+    }
+
+    .error-message{
+      background: #ffebee;
+      color: #f44336;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      animation: fadeIn 0.3s;
+    }
+
+    /* 成功提示样式 */
+    .success-message {
+      background: #e8f5e9;
+      color: #4caf50;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      animation: fadeIn 0.3s;
+    }
+
+    /* 加载动画 */
+    .loader {
+      display: none;
+      text-align: center;
+      margin: 15px 0;
+    }
+
+    .loader .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top-color: #ff6b6b;
+      border-radius: 50%;
+      margin: 0 auto;
+      animation: spin 1s linear infinite;
+    }
+
+    @media (max-width: 900px) {
+      .banner-section {
+        display: none;
+      }
+
+      .login-section {
+        padding: 40px 30px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        height: auto;
+      }
+
+      .login-section {
+        padding: 30px 20px;
+      }
+
+      .login-header img {
+        width: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="login-container">
+  <div class="banner-section">
+    <div class="banner-content">
+      <h1>瑞吉外卖管理平台</h1>
+      <p>高效管理您的餐厅业务，实时监控订单状态，优化配送流程，提升客户满意度</p>
+      <div class="food-icons">
+        <div class="food-icon">🍔</div>
+        <div class="food-icon">🍕</div>
+        <div class="food-icon">🍣</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-section">
+    <div class="login-header">
+      <img src="../../images/login/logo.png" alt="瑞吉外卖">
+      <h2>管理员登录</h2>
+    </div>
+
+    <form class="login-form" id="loginForm">
+      <div class="form-group">
+        <label for="username">账号</label>
+        <div class="input-with-icon">
+          <i class="fas fa-user input-icon"></i>
+          <input
+                  type="text"
+                  id="username"
+                  class="form-control"
+                  placeholder="请输入管理员账号"
+                  value="admin"
+                  required
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">密码</label>
+        <div class="input-with-icon">
+          <i class="fas fa-lock input-icon"></i>
+          <input
+                  type="password"
+                  id="password"
+                  class="form-control"
+                  placeholder="请输入登录密码"
+                  value="123456"
+                  required
+          >
+          <button type="button" class="password-toggle" id="togglePassword">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="remember-me">
+        <input type="checkbox" id="remember" checked>
+        <label for="remember">记住账号</label>
+      </div>
+
+      <button type="submit" class="login-btn" id="loginBtn">
+        登录系统
+      </button>
+
+      <div class="loader" id="loginLoader">
+        <div class="spinner"></div>
+      </div>
+
+      <p class="footer-text">© 2023 瑞吉外卖管理系统 - 专业餐饮解决方案</p>
+    </form>
+  </div>
+</div>
+
+<!-- 引入axios -->
+<script src="../../plugins/axios/axios.min.js"></script>
+<script src="../../js/request.js"></script>
+<script src="../../api/login.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginLoader = document.getElementById('loginLoader');
+
+    // 密码显示/隐藏功能
+    togglePassword.addEventListener('click', function() {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    });
+
+    // 表单提交处理
+    loginForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      // 清除旧消息
+      const existingMsg = document.querySelector('.error-message, .success-message');
+      if (existingMsg) {
+        existingMsg.remove();
+      }
+      // 使用封装的验证函数
+      const validation = validateLoginForm(username, password);
+      if (!validation.isValid) {
+        showError(validation.message);
+        return;
+      }
+      // 显示加载状态
+      loginBtn.classList.add('loading');
+      loginBtn.textContent = '登录中...';
+      loginBtn.disabled = true;
+      loginLoader.style.display = 'block';
+
+      try {
+        // 调用登录接口
+        const res = await loginApi({username, password});
+        if (res.code === 1) {
+          // 登录成功
+          loginBtn.classList.remove('loading');
+          loginBtn.classList.add('success');
+          loginBtn.textContent = '登录成功';
+          // 登录成功，保存用户信息到localStorage
+          localStorage.setItem('userInfo', JSON.stringify(res.data));
+          showSuccess('登录成功！正在跳转...');
+          // 检查是否有重定向URL
+          const redirectUrl = localStorage.getItem('redirectUrl');
+          if (redirectUrl) {
+            // 清除重定向URL
+            localStorage.removeItem('redirectUrl');
+            // 跳转到重定向URL
+            setTimeout(() => {
+              window.location.href = redirectUrl;
+            }, 1000);
+          } else {
+            // 否则跳转到默认首页
+            setTimeout(() => {
+              window.location.href = '/backend/index.html';
+            }, 1000);
+          }
+        } else {
+          // 恢复按钮状态
+          resetLoginButton();
+          showError(res.msg || '登录失败');
+        }
+      } catch (err) {
+        // 恢复按钮状态
+        resetLoginButton();
+        showError('登录请求失败');
+      }
+    });
+    // 表单验证函数（独立封装）
+    function validateLoginForm(username, password) {
+      if (!username || !password) {
+        return { isValid: false, message: '请输入账号和密码' };
+      }
+
+      if (username.length < 3 || username.length > 20) {
+        return { isValid: false, message: '账号长度应为3-20个字符' };
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        return { isValid: false, message: '账号只能包含字母、数字和下划线' };
+      }
+
+      if (password.length < 6) {
+        return { isValid: false, message: '密码长度不能少于6位' };
+      }
+
+      return { isValid: true, message: '' };
+    }
+
+    // 重置登录按钮状态
+    function resetLoginButton() {
+      loginBtn.classList.remove('loading');
+      loginBtn.textContent = '登录系统';
+      loginBtn.disabled = false;
+      loginLoader.style.display = 'none';
+    }
+
+    // 显示错误提示
+    function showError(message) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.textContent = message;
+
+      const existingError = document.querySelector('.error-message');
+      if (existingError) {
+        existingError.remove();
+      }
+
+      loginForm.insertBefore(errorDiv, loginForm.firstChild);
+    }
+
+    // 显示成功提示
+    function showSuccess(message) {
+      const successDiv = document.createElement('div');
+      successDiv.className = 'success-message';
+      successDiv.textContent = message;
+
+      const existingSuccess = document.querySelector('.success-message');
+      if (existingSuccess) {
+        existingSuccess.remove();
+      }
+
+      loginForm.insertBefore(successDiv, loginForm.firstChild);
+    }
+
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+/* 基础变量定义 - 便于统一维护 */
+:root {
+    --primary-color: #ffc200;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-color: #efefef;
+    --bg-white: #ffffff;
+    --spacing-sm: 8rem;
+    --spacing-md: 16rem;
+    --spacing-lg: 24rem;
+    --border-radius: 6rem;
+}
+
+#user {
+    height: 100%;
+    background-color: #f3f2f7;
+}
+
+/* 头部区域优化 */
+#user .divHead {
+    width: 100%;
+    padding: var(--spacing-md);
+    padding-top: calc(env(safe-area-inset-top) + 20rem); /* 适配刘海屏 */
+    box-sizing: border-box;
+    background: var(--primary-color);
+    /* 取消固定高度，由内容撑开 */
+}
+
+#user .divHead .divTitle {
+    font-size: 18rem;
+    font-family: PingFangSC, PingFangSC-Regular;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: center;
+    line-height: 25rem;
+    margin-bottom: var(--spacing-md);
+    position: relative;
+    padding: 0; /* 移除多余上内边距 */
+}
+
+#user .divHead .divTitle i {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20rem; /* 增大返回图标 */
+}
+
+/* 用户信息区域优化 */
+#user .divHead .divUser {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+}
+
+#user .divHead .divUser > img {
+    width: 64rem;
+    height: 64rem;
+    border-radius: 50%;
+    margin-right: var(--spacing-md);
+    border: 3rem solid rgba(255, 255, 255, 0.3); /* 增加边框层次感 */
+}
+
+#user .divHead .divUser .desc {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1; /* 占满剩余空间 */
+}
+
+#user .divHead .divUser .desc .divName {
+    font-size: 16rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 6rem;
+    display: flex;
+    align-items: center;
+}
+
+#user .divHead .divUser .desc .divName img {
+    width: 18rem;
+    height: 18rem;
+    margin-left: 8rem;
+}
+
+#user .divHead .divUser .desc .divPhone {
+    font-size: 14rem;
+    color: var(--text-secondary);
+}
+
+/* 内容区域优化 */
+#user .divContent {
+    height: calc(100% - 180rem); /* 调整高度计算 */
+    overflow-y: auto;
+    padding-bottom: 20rem; /* 底部留白 */
+}
+
+/* 链接区域优化 */
+#user .divLinks {
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    margin: var(--spacing-sm);
+    overflow: hidden; /* 防止内容溢出 */
+    box-shadow: 0 2rem 8rem rgba(0, 0, 0, 0.05); /* 增加轻微阴影 */
+}
+
+#user .divLinks .item {
+    display: flex;
+    align-items: center;
+    height: 56rem; /* 固定行高 */
+    padding: 0 var(--spacing-md);
+    position: relative;
+}
+
+#user .divLinks .item img {
+    width: 22rem;
+    height: 22rem;
+    margin-right: 12rem;
+}
+
+#user .divLinks .item span {
+    flex: 1;
+    font-size: 15rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#user .divLinks .item i {
+    position: absolute;
+    right: var(--spacing-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ccc;
+    font-size: 18rem;
+}
+
+#user .divLinks .divSplit {
+    height: 1rem;
+    background-color: var(--border-color);
+    border: 0;
+    margin: 0 var(--spacing-md); /* 分割线缩进 */
+}
+
+/* 订单区域优化 */
+#user .divOrders {
+    margin: var(--spacing-sm);
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    box-shadow: 0 2rem 8rem rgba(0, 0, 0, 0.05);
+}
+
+#user .divOrders .title {
+    height: 50rem;
+    line-height: 50rem;
+    font-size: 16rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    border-bottom: 1rem solid var(--border-color);
+    margin-bottom: var(--spacing-sm);
+}
+
+#user .divOrders .timeStatus {
+    height: 40rem;
+    line-height: 20rem;
+    font-size: 14rem;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1rem dashed var(--border-color);
+    margin-bottom: var(--spacing-md);
+}
+
+#user .divOrders .timeStatus span:first-child {
+    color: var(--text-primary);
+}
+
+#user .divOrders {
+    padding: var(--spacing-md);
+    box-sizing: border-box; /* 确保内边距不影响整体宽度 */
+}
+
+#user .divOrders .dishList {
+    padding: var(--spacing-sm) 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16rem; /* 增加菜品项之间的间距 */
+}
+
+#user .divOrders .dishList .item {
+    display: flex;
+    flex-direction: column; /* 改为垂直布局，确保口味信息能正常显示 */
+    padding: 12rem 0;
+}
+
+/* 菜品信息容器 - 包含名称和口味 */
+#user .divOrders .dishList .item .dish-info {
+    flex: 1;
+    margin-bottom: 8rem; /* 与数量区域保持距离 */
+}
+
+/* 菜名样式优化 */
+#user .divOrders .dishList .item .dish-name {
+    font-size: 15rem;
+    color: var(--text-primary);
+    margin-bottom: 6rem; /* 与口味信息保持距离 */
+    display: block;
+    line-height: 22rem;
+}
+
+/* 口味信息样式优化 - 确保显示 */
+#user .divOrders .dishList .item .flavor-info {
+    font-size: 14rem !important;
+    color: var(--text-secondary) !important;
+    font-style: italic !important;
+    padding-left: 0; /* 取消不必要的左内边距 */
+    margin: 0 !important;
+    display: block !important;
+    line-height: 20rem !important;
+}
+
+/* 数量样式调整 */
+#user .divOrders .dishList .item .dish-count {
+    font-size: 15rem;
+    color: var(--text-primary);
+    align-self: flex-end; /* 靠右对齐 */
+    min-width: auto; /* 取消固定宽度限制 */
+    text-align: right;
+    margin-top: 4rem;
+}
+#user .divOrders .result {
+    display: flex;
+    justify-content: flex-end;
+    height: 24rem;
+    font-size: 15rem;
+    color: var(--text-secondary);
+    line-height: 24rem;
+    margin-top: var(--spacing-sm);
+}
+
+#user .divOrders .result .price {
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-left: 8rem;
+}
+
+#user .divOrders .btn {
+    margin-top: var(--spacing-md);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12rem; /* 按钮间距 */
+}
+
+#user .divOrders .btn .btnAgain {
+    width: 124rem;
+    height: 36rem;
+    border: 1rem solid #e5e4e4;
+    border-radius: 18rem;
+    font-size: 14rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 36rem;
+    text-align: center;
+    background: transparent;
+    transition: all 0.2s;
+}
+
+#user .divOrders .btn .btnAgain:hover {
+    background-color: #f5f5f5;
+}
+
+/* 退出登录按钮优化 */
+#user .quitLogin {
+    margin: var(--spacing-sm);
+    height: 52rem;
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    font-size: 15rem;
+    font-weight: 500;
+    color: #e94e3c; /* 改为红色强调 */
+    line-height: 52rem;
+    text-align: center;
+    box-shadow: 0 2rem 8rem rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+#user .quitLogin:hover {
+    background-color: #fef7f7;
+}
