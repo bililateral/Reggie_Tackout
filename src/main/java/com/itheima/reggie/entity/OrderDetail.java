@@ -23,10 +23,10 @@ public class OrderDetail implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
-    @Schema(description = "名字")
+    @Schema(description = "菜品/套餐名字", example = "宫保鸡丁")
     private String name;
 
-    @Schema(description = "图片")
+    @Schema(description = "图片路径")
     private String image;
 
     @Schema(description = "订单id")
@@ -38,12 +38,12 @@ public class OrderDetail implements Serializable {
     @Schema(description = "套餐id")
     private Long setmealId;
 
-    @Schema(description = "口味")
+    @Schema(description = "菜品口味，如'微辣'")
     private String dishFlavor;
 
-    @Schema(description = "数量")
+    @Schema(description = "购买数量", example = "2")
     private Integer number;
 
-    @Schema(description = "金额")
+    @Schema(description = "金额", example = "38.00")
     private BigDecimal amount;
 }

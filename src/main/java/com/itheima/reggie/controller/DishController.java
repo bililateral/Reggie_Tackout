@@ -9,6 +9,12 @@ import com.itheima.reggie.entity.DishFlavor;
 import com.itheima.reggie.service.CategoryService;
 import com.itheima.reggie.service.DishFlavorService;
 import com.itheima.reggie.service.DishService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Tag(name = "菜品管理接口", description = "菜品信息及口味管理，支持分页、条件查询和状态变更")
 @Slf4j
 @RestController
 @RequestMapping("/dish")
@@ -33,8 +40,16 @@ public class DishController {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Operation(summary = "新增菜品", description = "添加新菜品及关联的口味信息，支持多口味设置",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "新增成功",
+                            content = @Content(schema = @Schema(implementation = R.class))),
+                    @ApiResponse(responseCode = "500", description = "新增失败",
+                            content = @Content(schema = @Schema(implementation = R.class)))
+            })
     @PostMapping
-    public R<String> save(@RequestBody DishDto dishdto) {
+    public R<String> save(@Parameter(description = "包含菜品基本信息（名称、分类、价格等）和口味列表的DTO对象", required = true)
+                          @RequestBody DishDto dishdto) {
         log.info("save dishdto :{}", dishdto);
         dishService.saveWithFlavor(dishdto);
         //删除旧Redis缓存
@@ -43,15 +58,18 @@ public class DishController {
         return R.success("新增菜品成功");
     }
 
-    /**
-     * 菜品信息分页功能实现
-     * @param page 有少页
-     * @param pageSize 每页多大
-     * @param name 传过来的菜品名称
-     * @return 分页结果
-     */
+    @Operation(summary = "菜品分页查询", description = "分页查询菜品列表，支持按名称模糊搜索，返回结果包含分类名称",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "查询成功",
+                            content = @Content(schema = @Schema(implementation = R.class))),
+                    @ApiResponse(responseCode = "500", description = "查询失败",
+                            content = @Content(schema = @Schema(implementation = R.class)))
+            })
     @GetMapping("/page")
-    public R<Page<DishDto>> page(int page, int pageSize, String name){
+    public R<Page<DishDto>> page(
+            @Parameter(description = "页码，从1开始", required = true, example = "1") int page,
+            @Parameter(description = "每页显示条数", required = true, example = "10") int pageSize,
+            @Parameter(description = "菜品名称，用于模糊查询，非必填", example = "宫保鸡丁") String name){
         log.info("正在进行菜品分页...");
         //构造分页构造器对象
         Page<Dish> pageInfo = new Page<>(page, pageSize);
@@ -64,15 +82,14 @@ public class DishController {
         queryWrapper.orderByDesc(Dish::getUpdateTime);
         //执行分页查询
         dishService.page(pageInfo, queryWrapper);
-        //对象拷贝(忽略records这个属性。records是分页查询展示的结果数组，就是页面上看到的一行行数据)
-        BeanUtils.copyProperties(pageInfo, dtoPage,"records");//BeanUtils.copyProperties(源，目的),这里最好别强制类型转换
+        //对象拷贝(忽略records这个属性)
+        BeanUtils.copyProperties(pageInfo, dtoPage,"records");
         //修改records数组
         List<Dish> records = pageInfo.getRecords();
         List<DishDto> list = records.stream().map(item->{
             DishDto dto = new DishDto();
             BeanUtils.copyProperties(item, dto);
-            //给DishDto实体中的categoryName属性赋值(先根据item(Dish实体)中的CategoryId在
-            //category表里查询对应的Category对象，获取该对象的categoryName属性赋值给DishDto实体对应属性)
+            //设置分类名称
             dto.setCategoryName(categoryService.getById(item.getCategoryId()).getName());
             return dto;
         }).collect(Collectors.toList());
@@ -80,21 +97,33 @@ public class DishController {
         return R.success(dtoPage);
     }
 
-    /**
-     * 根据id查询菜品信息和对应的口味信息
-     * @param id  前端发起的Get请求中的菜品id参数
-     * @return  菜品信息和对应的口味信息
-     */
+    @Operation(summary = "根据ID查询菜品详情", description = "查询指定ID的菜品信息及关联的口味列表，用于编辑菜品",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "查询成功",
+                            content = @Content(schema = @Schema(implementation = R.class))),
+                    @ApiResponse(responseCode = "404", description = "菜品不存在",
+                            content = @Content(schema = @Schema(implementation = R.class)))
+            })
     @GetMapping("/{id}")
-    public R<DishDto> get(@PathVariable Long id) {
+    public R<DishDto> get(
+            @Parameter(description = "菜品ID", required = true, example = "1397844313464427522")
+            @PathVariable Long id) {
         log.info("根据id查询菜品信息和对应的口味信息 id: {}", id);
         DishDto byIdWithFlavor = dishService.getByIdWithFlavor(id);
         return R.success(byIdWithFlavor);
     }
 
-    //修改菜品
+    @Operation(summary = "修改菜品", description = "更新菜品基本信息及关联的口味信息，支持全量更新口味列表",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "修改成功",
+                            content = @Content(schema = @Schema(implementation = R.class))),
+                    @ApiResponse(responseCode = "500", description = "修改失败",
+                            content = @Content(schema = @Schema(implementation = R.class)))
+            })
     @PutMapping
-    public R<String> update(@RequestBody DishDto dto) {
+    public R<String> update(
+            @Parameter(description = "包含更新后菜品信息和口味列表的DTO对象", required = true)
+            @RequestBody DishDto dto) {
         log.info("update dish dto :{}", dto);
         dishService.updateWithFlavor(dto);
         //删除旧Redis缓存
@@ -103,13 +132,17 @@ public class DishController {
         return R.success("修改菜品成功");
     }
 
-    /**
-     * 更新菜品为停售
-     * @param ids Dish的id
-     * @return
-     */
+    @Operation(summary = "停售菜品", description = "将指定ID的菜品状态设置为停售（0），停售后不在前端展示",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "状态更新成功",
+                            content = @Content(schema = @Schema(implementation = R.class))),
+                    @ApiResponse(responseCode = "404", description = "菜品不存在",
+                            content = @Content(schema = @Schema(implementation = R.class)))
+            })
     @PostMapping("/status/0")
-    public R<String> updateStatusStop(Long ids){
+    public R<String> updateStatusStop(
+            @Parameter(description = "菜品ID", required = true, example = "1397844313464427522")
+            Long ids){
         log.info("停售菜品 id:{}",ids);
         Dish dish=dishService.getById(ids);
         dish.setStatus(0);
@@ -122,13 +155,17 @@ public class DishController {
         return R.success("更新菜品在售状态成功");
     }
 
-    /**
-     * 更新菜品状态为起售
-     * @param ids Dish的id
-     * @return
-     */
+    @Operation(summary = "起售菜品", description = "将指定ID的菜品状态设置为起售（1），起售后可在前端展示和下单",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "状态更新成功",
+                            content = @Content(schema = @Schema(implementation = R.class))),
+                    @ApiResponse(responseCode = "404", description = "菜品不存在",
+                            content = @Content(schema = @Schema(implementation = R.class)))
+            })
     @PostMapping("/status/1")
-    public R<String> updateStatusStart(Long ids){
+    public R<String> updateStatusStart(
+            @Parameter(description = "菜品ID", required = true, example = "1397844313464427522")
+            Long ids){
         log.info("启售菜品 id:{}",ids);
         Dish dish=dishService.getById(ids);
         dish.setStatus(1);
@@ -141,9 +178,17 @@ public class DishController {
         return R.success("更新菜品在售状态成功");
     }
 
-    //批量删除菜品
+    @Operation(summary = "批量删除菜品", description = "删除指定ID列表的菜品及其关联的口味信息，支持批量操作",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "删除成功",
+                            content = @Content(schema = @Schema(implementation = R.class))),
+                    @ApiResponse(responseCode = "500", description = "删除失败",
+                            content = @Content(schema = @Schema(implementation = R.class)))
+            })
     @DeleteMapping
-    public R<String> delete(@RequestParam List<Long> ids) {
+    public R<String> delete(
+            @Parameter(description = "菜品ID列表，多个ID用逗号分隔", required = true, example = "1,2,3")
+            @RequestParam List<Long> ids) {
         log.info("批量删除菜品 ids:{}", ids);
         dishService.removeWithFlavor(ids);
         //删除旧Redis缓存
@@ -152,9 +197,17 @@ public class DishController {
         return R.success("菜品数据删除成功");
     }
 
-    //根据条件查询菜品数据(起售状态为 1且CategoryId等于请求的CategoryId)
+    @Operation(summary = "查询菜品列表", description = "根据分类ID和状态查询菜品列表，返回包含口味信息的结果，支持Redis缓存",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "查询成功",
+                            content = @Content(schema = @Schema(implementation = R.class))),
+                    @ApiResponse(responseCode = "500", description = "查询失败",
+                            content = @Content(schema = @Schema(implementation = R.class)))
+            })
     @GetMapping("/list")
-    public R<List<DishDto>> list(Dish dish){
+    public R<List<DishDto>> list(
+            @Parameter(description = "查询条件，包含分类ID和状态（1为起售）", required = true)
+            Dish dish){
         log.info("list dish :{}", dish);
         List<DishDto> dishDtolist;
         //从Redis缓存中获取缓存数据,以菜品分类为键

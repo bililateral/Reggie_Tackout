@@ -25,14 +25,9 @@ public class LoginCheckFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         log.info("拦截到请求：{}",request.getRequestURI());
         //不需要过滤器处理的请求路径
-        String [] urls = new String[]{
-            "/employee/login",
-            "/employee/loginout",
-            "/backend/**",
-            "/front/**" ,
-            "/favicon.ico",
-            "/user/code", //移动端发送短信
-            "/user/login" //移动端登录
+        String [] urls = new String[]{"/employee/login","/employee/loginout",
+            "/backend/**","/front/**" ,"/favicon.ico", "/user/code","/user/login",
+                "/swagger-ui/**","/v3/api-docs/**"
         };
         boolean check = check(urls, request.getRequestURI());
         //请求路径不需要过滤器处理，直接放行

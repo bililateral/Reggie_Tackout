@@ -6,6 +6,9 @@ import com.itheima.reggie.entity.User;
 import com.itheima.reggie.service.UserService;
 import com.itheima.reggie.utils.SMSUtil;
 import com.itheima.reggie.utils.ValidateCodeUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Tag(name = "用户管理接口", description = "移动端用户注册、登录、获取验证码等操作")
 @Slf4j
 @RestController
 @RequestMapping("/user")
@@ -27,14 +31,15 @@ public class UserController {
     private RedisTemplate<Object, Object> redisTemplate;
 
     //发送手机验证码
+    @Operation(summary = "发送手机验证码", description = "向指定手机号发送验证码用于登录")
     @GetMapping("/code")
-    public R<String> sendMsg( String phone){
+    public R<String> sendMsg(@Parameter(description = "用户手机号", required = true) String phone){
         log.info("正在发送验证码...");
         //获取手机号
         if(StringUtils.isNotEmpty(phone)){
             //生成随机的4位验证码
             String validCode = ValidateCodeUtil.generateValidateCode(6).toString();
-            //调用阿里云的短信服务API完成发送短信(没钱用不了,只能让它显示在控制台了)
+            //调用阿里云的短信服务API完成发送短信(没钱用不了,只能把验证码输出到控制台了)
             log.info("验证码为：{}",validCode);
             //SMSUtil.sendMessage("","", phone, validCode);
             //保存并校验验证码
@@ -48,8 +53,9 @@ public class UserController {
     }
 
     //移动端用户登录
+    @Operation(summary = "移动端用户登录", description = "用户通过手机号和验证码登录系统")
     @PostMapping("/login")
-    public R<User> login(@RequestBody Map<String,Object> map, HttpSession session){//map也可以换成DTO的方式，主要是要包含前面发送的验证码
+    public R<User> login(@Parameter(description = "包含手机号和验证码的Map", required = true) @RequestBody Map<String,Object> map, HttpSession session){//map也可以换成DTO的方式，主要是要包含前面发送的验证码
         log.info("移动端用户登录...{}",map.toString());
         //获取手机号
         String phone = map.get("phone").toString();
@@ -79,6 +85,7 @@ public class UserController {
         return R.error("登录失败,验证码错误！");
     }
 
+    @Operation(summary = "移动端用户退出", description = "用户退出当前登录状态")
     @PostMapping("/loginout")
     public R<String> loginout(HttpSession session){
         log.info("移动端用户退出...");

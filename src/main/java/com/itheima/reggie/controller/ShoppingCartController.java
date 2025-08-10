@@ -5,6 +5,10 @@ import com.itheima.reggie.common.BaseContext;
 import com.itheima.reggie.common.R;
 import com.itheima.reggie.entity.ShoppingCart;
 import com.itheima.reggie.service.ShoppingCartService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "购物车接口", description = "用户购物车的添加、减少、查询、清空等操作")
 @Slf4j
 @RestController
 @RequestMapping("/shoppingCart")
@@ -20,8 +25,9 @@ public class ShoppingCartController {
     private ShoppingCartService shoppingCartService;
 
     //将菜品或套餐添加到购物车
+    @Operation(summary = "添加商品到购物车", description = "将菜品或套餐添加到当前用户的购物车，支持相同商品数量累加")
     @PostMapping("/add")
-    public R<ShoppingCart> add(@RequestBody ShoppingCart shoppingCart){
+    public R<ShoppingCart> add(@Parameter(description = "购物车对象，包含菜品ID/套餐ID及口味信息", required = true) @RequestBody ShoppingCart shoppingCart){
         log.info("正在添加购物车... 购物车数据：{}",shoppingCart);
         //设置用户id,指定当前是哪个用户的购物车数据
         shoppingCart.setUserId(BaseContext.getCurrentId());
@@ -57,8 +63,13 @@ public class ShoppingCartController {
         return R.success(cartServiceOne);
     }
 
+    @Operation(summary = "减少购物车商品数量", description = "减少购物车中商品的数量，数量为1时直接删除",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "操作成功"),
+                    @ApiResponse(responseCode = "500", description = "商品不存在或操作失败")
+            })
     @PostMapping("/sub")
-    public R<ShoppingCart> sub(@RequestBody ShoppingCart shoppingCart) {
+    public R<ShoppingCart> sub(@Parameter(description = "购物车对象，包含菜品ID/套餐ID及口味信息", required = true) @RequestBody ShoppingCart shoppingCart) {
         log.info("正在减少购物车商品... 购物车数据：{}", shoppingCart);
 
         // 设置用户ID，指定当前用户的购物车数据
@@ -100,6 +111,7 @@ public class ShoppingCartController {
     }
 
     //查看购物车
+    @Operation(summary = "查询购物车列表", description = "获取当前用户购物车中的所有商品")
     @GetMapping("list")
     public R<List<ShoppingCart>> getShoppingCart(){
         log.info("查看购物车...");
@@ -112,6 +124,7 @@ public class ShoppingCartController {
     }
 
     //清空购物车
+    @Operation(summary = "清空购物车", description = "删除当前用户购物车中的所有商品")
     @DeleteMapping("/clean")
     public R<String> clean(){
         log.info("清空购物车...");

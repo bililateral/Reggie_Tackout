@@ -1,6 +1,12 @@
 package com.itheima.reggie.controller;
 
 import com.itheima.reggie.common.R;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +20,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
 
-//负责文件上传和下载
+@Tag(name = "通用接口", description = "文件上传和下载相关接口")
 @Slf4j
 @RestController
 @RequestMapping("/common")
@@ -34,8 +40,17 @@ public class CommonController {
      * @RequestPart更适合处理复杂的 multipart 部分，如文件或 JSON 对象
      * 当需要 Content-Type 信息时，应该使用@RequestPart
      */
+    @Operation(summary = "文件上传", description = "用于上传图片等文件，返回文件名",
+    responses = {
+        @ApiResponse(responseCode = "200", description = "上传成功",
+                content = @Content(schema = @Schema(implementation = R.class))),
+        @ApiResponse(responseCode = "500", description = "上传失败",
+                content = @Content(schema = @Schema(implementation = R.class)))
+    })
     @PostMapping("/upload")
-    public R<String> upload(@RequestPart("file") MultipartFile file) throws IOException {
+    public R<String> upload(@Parameter(description = "要上传的文件（支持jpg、png、jpeg等图片格式）", required = true,
+            schema = @Schema(type = "string", format = "binary"))
+                                @RequestPart("file") MultipartFile file) throws IOException {
         log.info("文件上传中... {}",file.toString());
         //获取文件后缀名
         String suffix = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf("."));
@@ -51,8 +66,13 @@ public class CommonController {
     }
 
     //文件下载
+    @Operation(summary = "文件下载", description = "根据文件名下载文件，用于展示图片等",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "下载成功，返回图片流"),
+                    @ApiResponse(responseCode = "500", description = "文件不存在或下载失败")
+            })
     @GetMapping("/download")
-    public void download(String name, HttpServletResponse response) throws IOException {
+    public void download(@Parameter(description = "要下载的文件名（需是已上传文件的唯一标识）", required = true) String name, HttpServletResponse response) throws IOException {
         log.info("文件下载中... {}",name);
         try {
             //输入流，通过输入流读取文件内容
