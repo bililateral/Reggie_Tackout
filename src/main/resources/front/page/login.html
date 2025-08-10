@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,user-scalable=no,minimal-ui">
+        <title>菩提阁</title>
+        <link rel="icon" href="./../images/favico.ico">
+        <!--不同屏幕尺寸根字体设置-->
+        <script src="./../js/base.js"></script>
+        <!--element-ui的样式-->
+        <link rel="stylesheet" href="../../backend/plugins/element-ui/index.css" />
+        <!-- 引入样式  -->
+        <link rel="stylesheet" href="../styles/index.css" />
+        <!--本页面内容的样式-->
+        <link rel="stylesheet" href="./../styles/login.css" />
+    </head>
+    <body>
+    <div id="login" v-loading="loading">
+        <div class="divHead">登录</div>
+        <div class="divContainer">
+            <el-input placeholder=" 请输入手机号码" v-model="form.phone"  maxlength='20'></el-input>
+            <div class="divSplit"></div>
+            <el-input placeholder=" 请输入验证码" v-model="form.code"  maxlength='20'></el-input>
+            <span @click='getCodeId'>获取验证码</span>
+        </div>
+        <div class="divMsg" v-if="msgFlag">
+            <!--根据不同情况显示不同提示信息 -->
+            {{ msgFlag === 'format' ? '手机号格式不正确，请重新输入' : '请输入手机号码' }}
+        </div>
+        <!--简化class绑定 -->
+        <el-button type="primary" class="btnSubmit" :class="{btnNoPhone:!form.phone,btnPhone:form.phone}" @click="btnLogin">登录</el-button>
+    </div>
+    <!-- 开发环境版本，包含了有帮助的命令行警告 -->
+    <script src="../../backend/plugins/vue/vue.js"></script>
+    <!-- 引入组件库 -->
+    <script src="../../backend/plugins/element-ui/index.js"></script>
+    <!-- 引入axios -->
+    <script src="../../backend/plugins/axios/axios.min.js"></script>
+    <script src="./../js/request.js"></script>
+    <script src="./../api/login.js"></script>
+    </body>
+    <script>
+        new Vue({
+            el:"#login",
+            data:{
+                form:{
+                    phone:'',
+                    code:''
+                },
+                msgFlag:'',
+                loading:false
+            },
+            computed:{},
+            created(){},
+            mounted(){},
+            methods:{
+                async getCodeId(){
+                    this.form.code = ''
+                    const regex = /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/;
+                    if (!this.form.phone) {  //手机号为空
+                        this.msgFlag = 'empty';
+                        return;
+                    }
+                    if (regex.test(this.form.phone)) {
+                        try {
+                            const res = await getPhoneCode({phone:this.form.phone})
+                            this.msgFlag = '';
+                            this.$notify({ type:'success', message:'验证码获取成功，有效期5分钟'});
+                        } catch (err) {
+                            this.$notify({
+                                type: 'error',
+                                message: err.response?.data?.msg || '获取验证码失败，请重试'
+                            });
+                        }
+                    }else{
+                        this.msgFlag = 'format';
+                    }
+                },
+                async btnLogin(){
+                    const regex = /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/;
+
+                    //完善表单验证
+                    if (!this.form.phone) {
+                        this.$notify({ type:'warning', message:'请输入手机号码'});
+                        return;
+                    }
+
+                    if (!regex.test(this.form.phone)) {
+                        this.$notify({ type:'warning', message:'请输入正确的手机号码'});
+                        return;
+                    }
+
+                    if (!this.form.code) {
+                        this.$notify({ type:'warning', message:'请输入验证码'});
+                        return;
+                    }
+
+                    this.loading = true
+                    try{
+                        const res = await loginApi({phone:this.form.phone,code:this.form.code})
+                        if(res.code === 1){
+                            sessionStorage.setItem("userPhone",this.form.phone)
+                            window.requestAnimationFrame(()=>{
+                                window.location.href= '/front/index.html'
+                            })
+                        }else{
+                            this.$notify({ type:'warning', message:res.msg});
+                        }
+                    }catch (err){
+                        this.$notify({
+                            type: 'error',
+                            message: err.response?.data?.msg || '登录失败，请重试'
+                        });
+                    }finally {
+                        // 修改：确保loading状态重置
+                        this.loading = false;
+                    }
+
+                }
+            }
+        })
+    </script>
+</html>
